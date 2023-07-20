@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:freshnet_flutter/Data.dart';
 
 class ServicePage extends StatelessWidget {
@@ -182,6 +183,7 @@ class SectionAddEventWidget extends StatelessWidget {
                     child: TextField(
                       decoration: const InputDecoration(
                         labelText: 'Description',
+                        border: null,
                       ),
                       onChanged: (value) => print('Entered text: $value'),
                       maxLines: null,
@@ -253,7 +255,7 @@ class SectionEventsWidget extends StatelessWidget {
       elevation: 0,
       surfaceTintColor: Colors.white,
       clipBehavior: Clip.antiAlias,
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         child: Column(
           children: [
@@ -403,7 +405,7 @@ class BelongingWidget extends StatelessWidget {
           belonging.title,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        Text(belonging.description),
+        if (belonging.description.isNotEmpty) Text(belonging.description),
       ],
     );
   }
@@ -507,85 +509,97 @@ class SectionBelongingsWidget extends StatelessWidget {
         BottomSheetWidget.show(
           context,
           title: 'Edit Belongings',
-          widget: Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Card(
-                  color: const Color(0xffF7F7F7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(color: Color(0x0D0D0D0F), width: 1),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          Expanded(
-                            child: TextField(
-                              controller:
-                                  TextEditingController(text: 'charger'),
-                            ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.only(left: 10),
-                            width: 100,
-                            child: TextField(
-                                controller: TextEditingController(text: 'x1')),
-                          ),
-                        ]),
-                        TextField(
-                          controller: TextEditingController(text: 'broken'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Card(
-                  color: const Color(0xffF7F7F7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(color: Color(0x0D0D0D0F), width: 1),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          Expanded(
-                            child: TextField(
-                              controller:
-                                  TextEditingController(text: 'charger'),
-                            ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.only(left: 10),
-                            width: 100,
-                            child: TextField(
-                                controller: TextEditingController(text: 'x1')),
-                          ),
-                        ]),
-                        TextField(
-                          controller: TextEditingController(text: 'broken'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          widget: SectionBottomSheetBelongings(belongings: service.belongings),
         );
       },
       body: service.belongings.isNotEmpty
           ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children:
                   service.belongings.map((e) => BelongingWidget(e)).toList(),
             )
           : const Text('Empty', style: TextStyle()),
+    );
+  }
+}
+
+class SectionBottomSheetBelongings extends StatelessWidget {
+  final List<Belonging> belongings;
+
+  late final List<Belonging> templates;
+
+  SectionBottomSheetBelongings({required this.belongings}) {
+    templates = belongings;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: templates
+            .map((e) => SectionBottomSheetBelonging(belonging: e))
+            .toList(),
+      ),
+    );
+  }
+}
+
+class SectionBottomSheetBelonging extends StatelessWidget {
+  final Belonging belonging;
+
+  SectionBottomSheetBelonging({required this.belonging});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: const Color(0xffF7F7F7),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(color: Color(0x0D0D0D0F), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: TextField(
+                    controller: TextEditingController(text: belonging.title),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(left: 10),
+                  width: 80,
+                  child: Row(
+                    children: [
+                      const Text('x'),
+                      Expanded(
+                        flex: 1,
+                        child: TextField(
+                          controller: TextEditingController(
+                            text: '${belonging.quantity}',
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            TextField(
+              controller: TextEditingController(text: belonging.description),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -602,6 +616,7 @@ class SectionImagesWidget extends StatelessWidget {
       body: service.belongings.isNotEmpty
           ? Wrap(
               spacing: 4,
+              runSpacing: 4,
               children: service.images.map((e) {
                 return FutureBuilder<Uint8List>(
                   future: e.toBlob(),
@@ -662,10 +677,16 @@ class SectionCollectedWidget extends StatelessWidget {
 }
 
 class BottomSheetWidget extends StatelessWidget {
-  static show(BuildContext context,
-      {required Widget widget, required String title}) {
+  static show(
+    BuildContext context, {
+    required Widget widget,
+    required String title,
+  }) {
     showModalBottomSheet(
       context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
       builder: (context) {
         return BottomSheetWidget(widget: widget, title: title);
       },
@@ -683,33 +704,38 @@ class BottomSheetWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(width: 0.1),
-              ),
-            ),
-            child: Row(
-              children: [
-                InkWell(
-                  onTap: () => Navigator.pop(context),
-                  borderRadius: BorderRadius.circular(50),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    child: const Icon(Icons.arrow_back),
+    return Scaffold(
+      body: Container(
+        height: double.infinity,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(width: 0.1),
                   ),
                 ),
-                Text(title),
-              ],
-            ),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: () => Navigator.pop(context),
+                      borderRadius: BorderRadius.circular(50),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(Icons.arrow_back),
+                      ),
+                    ),
+                    Text(title),
+                  ],
+                ),
+              ),
+              widget,
+            ],
           ),
-          widget,
-        ],
+        ),
       ),
     );
   }

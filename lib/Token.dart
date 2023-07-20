@@ -6,6 +6,10 @@ import 'package:http/http.dart' as http;
 
 class Token {
   static Future login(String username, String password) async {
+    if (username.isEmpty || password.isEmpty) {
+      return;
+    }
+
     final response = await http.post(
       Uri.parse('${Api.HOST}/session/login'),
       headers: {'Content-Type': 'application/json'},

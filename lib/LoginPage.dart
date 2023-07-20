@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:freshnet_flutter/ServicesPage.dart';
 import 'package:freshnet_flutter/Token.dart';
 
@@ -50,9 +47,33 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void login() async {
+    if (username.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('You must enter username'),
+        duration: Duration(seconds: 3),
+      ));
+      return;
+    }
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('You must enter password'),
+        duration: Duration(seconds: 3),
+      ));
+      return;
+    }
+
     final user = await Token.login(username, password);
 
-    if (user == null) return;
+    if (user == null) {
+      const snackBar = SnackBar(
+        content: Text('Login Failed'),
+        duration: Duration(seconds: 3),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+      return;
+    }
 
     Navigator.pushReplacement(
       context,

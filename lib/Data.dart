@@ -26,12 +26,7 @@ class Services {
     final Map<String, dynamic> data = jsonDecode(response.body);
     final List<dynamic> jsonServices = data['content'];
 
-    List<Service> list = [];
-    for (var jsonService in jsonServices) {
-      list.add(Service().fromData(jsonService));
-    }
-
-    return list;
+    return jsonServices.map((e) => Service().fromData(e)).toList();
   }
 }
 
@@ -135,10 +130,14 @@ class ServiceImage {
   }
 
   Future<Uint8List> toBlob() async {
-    const String apiUrl = 'http://localhost/service_v2/get/image';
+    final String apiUrl = '${Api.HOST}/service_v2/get/image';
     final String url = '$apiUrl/$name';
+    final String token = await Token.get() ?? '';
 
-    final response = await http.get(Uri.parse(url));
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'authorization': token},
+    );
     if (response.statusCode == 200) {
       return response.bodyBytes;
     } else {

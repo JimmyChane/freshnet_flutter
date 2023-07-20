@@ -14,12 +14,14 @@ class ServicesPage extends StatefulWidget {
 }
 
 class _ServicesPageState extends State<ServicesPage> {
-  _ServicesPageState() {
-    fetchServices();
-  }
-
   List<Service> services = [];
   List<Service> tabServices = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchServices();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +29,12 @@ class _ServicesPageState extends State<ServicesPage> {
       backgroundColor: const Color(0xffF1F1F1),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text('Services'),
+        title: const Text('Services'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => clickAddService(),
+          ),
           PopupMenuButton<String>(
             onSelected: (value) async {
               if (value == 'logout') {
@@ -55,11 +61,72 @@ class _ServicesPageState extends State<ServicesPage> {
           child: Column(
             children: [
               TabsWidget(onTabChanged: onTabChanged),
-              ServicesWidget(services: tabServices)
+              ServicesWidget(services: tabServices),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  clickAddService() {
+    const String name = 'Jimmy';
+
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        return Scaffold(
+          body: Container(
+            height: double.infinity,
+            width: double.infinity,
+            padding: const EdgeInsets.all(8),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Card(
+                    color: const Color(0xffeeeeee),
+                    shape: const RoundedRectangleBorder(
+                      side: BorderSide(width: 0.1),
+                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: Text('Admin: $name'),
+                    ),
+                  ),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('Customer'),
+                      TextField(
+                        decoration: InputDecoration(labelText: 'Name'),
+                      ),
+                      TextField(
+                        decoration: InputDecoration(labelText: 'Phone Number'),
+                      ),
+                    ],
+                  ),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                        ),
+                        maxLines: null,
+                      ),
+                    ],
+                  ),
+                  Text('Belonging'),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -176,9 +243,11 @@ class ServicesWidget extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(5),
       child: Column(
-        children: [
-          ...services.map((service) => ServiceWidget(service)).toList().reversed
-        ],
+        children: services
+            .map((service) => ServiceWidget(service))
+            .toList()
+            .reversed
+            .toList(),
       ),
     );
   }
@@ -191,25 +260,24 @@ class ServiceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ServicePage(service: service),
-            ),
-          );
-        },
-        child: SizedBox(
-          height: 180,
+    return IntrinsicHeight(
+      child: Card(
+        elevation: 0,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ServicePage(service: service),
+              ),
+            );
+          },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(width: 5, color: service.state.color),
+              Container(width: 4, color: service.state.color),
               Expanded(
                 flex: 1,
                 child: Container(
