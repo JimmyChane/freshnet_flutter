@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:freshnet_flutter/Api.dart';
+import 'Api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-class Token {
+class Login {
   static Future login(String username, String password) async {
     if (username.isEmpty || password.isEmpty) {
       return;
@@ -27,18 +27,18 @@ class Token {
     final String token = content['token'];
     final Map<String, dynamic> user = content['user'];
 
-    await Token.save(token);
+    await Login.saveLocalToken(token);
 
     return user;
   }
 
-  static Future<String?> get() async {
+  static Future<String?> getLocalToken() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
 
-  static Future<bool> check() async {
-    final String? storedToken = await get();
+  static Future<bool> verifyLocalToken() async {
+    final String? storedToken = await getLocalToken();
 
     if (storedToken == null) return false;
 
@@ -58,12 +58,12 @@ class Token {
     return true;
   }
 
-  static Future clear() async {
+  static Future clearLocalToken() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
   }
 
-  static Future save(String token) async {
+  static Future saveLocalToken(String token) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
   }

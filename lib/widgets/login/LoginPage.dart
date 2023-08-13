@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:freshnet_flutter/ServicesPage.dart';
-import 'package:freshnet_flutter/Token.dart';
+import 'package:freshnet_flutter/widgets/service/ServicePage.dart';
+import 'package:freshnet_flutter/logics/Login.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -46,6 +46,15 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  showSnackBar(SnackBar snackBar) {
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  Future<T?> routeTo<T extends Object?, TO extends Object?>(Route<T> newRoute,
+      {TO? result}) {
+    return Navigator.pushReplacement(context, newRoute);
+  }
+
   void login() async {
     if (username.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -62,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final user = await Token.login(username, password);
+    final user = await Login.login(username, password);
 
     if (user == null) {
       const snackBar = SnackBar(
@@ -70,14 +79,11 @@ class _LoginPageState extends State<LoginPage> {
         duration: Duration(seconds: 3),
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      showSnackBar(snackBar);
 
       return;
     }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => ServicesPage()),
-    );
+    routeTo(MaterialPageRoute(builder: (context) => const ServicesPage()));
   }
 }

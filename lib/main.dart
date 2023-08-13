@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:freshnet_flutter/LoginPage.dart';
-import 'package:freshnet_flutter/ServicesPage.dart';
-import 'package:freshnet_flutter/Token.dart';
+import 'package:freshnet_flutter/widgets/login/LoginPage.dart';
+import 'package:freshnet_flutter/widgets/service/ServicePage.dart';
+import 'package:freshnet_flutter/logics/Login.dart';
 
 void main() {
   runApp(const App());
@@ -24,7 +24,7 @@ class _AppState extends State<App> {
         useMaterial3: true,
       ),
       home: FutureBuilder(
-        future: Token.check(),
+        future: Login.verifyLocalToken(),
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
